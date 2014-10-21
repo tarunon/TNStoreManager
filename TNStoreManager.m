@@ -236,7 +236,7 @@
         if (_useUbiquityStore) {
             if (!_ubiquityStoreURL) {
 #ifndef EXTENSION
-                [[[UIAlertView alloc] initWithTitle:ROOM_STRING_ALERT_TITLE_DISABLECLOUD message:ROOM_STRING_ALERT_MESSAGE_DISABLECLOUD delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+                [[[UIAlertView alloc] initWithTitle:@"Disable iCloud" message:@"Please open Settings App, and enable iCloud options." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
 #endif
                 _useUbiquityStore = NO;
                 return;
