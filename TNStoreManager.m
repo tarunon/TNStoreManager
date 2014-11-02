@@ -228,7 +228,7 @@
     });
 }
 
-- (void)setuseUbiquityStore:(BOOL)useUbiquityStore
+- (void)setUseUbiquityStore:(BOOL)useUbiquityStore
 {
     if (_useUbiquityStore ^ useUbiquityStore) {
         _useUbiquityStore = useUbiquityStore;
