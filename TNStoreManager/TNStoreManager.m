@@ -274,11 +274,6 @@
         void (^moveBlock)(TNStoreManagerPriorityStore);
         if (_useUbiquityStore) {
             if (!_ubiquityStoreURL) {
-#if TARGET_OS_IPHONE
-#ifndef EXTENSION
-                [[[UIAlertView alloc] initWithTitle:ROOM_STRING_ALERT_TITLE_DISABLECLOUD message:ROOM_STRING_ALERT_MESSAGE_DISABLECLOUD delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
-#endif
-#endif
                 _useUbiquityStore = NO;
                 return;
             }
