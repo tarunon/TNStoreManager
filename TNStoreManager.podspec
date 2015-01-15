@@ -16,4 +16,5 @@ Pod::Spec.new do |s|
   s.platform     = :ios, "7.0"
   s.source       = { :git => "https://github.com/tarunon/TNStoreManager.git", :tag => "0.0.1" }
   s.source_files  = "TNStoreManager", "TNStoreManager/*.{h,m}"
+  s.requires_arc = true
 end

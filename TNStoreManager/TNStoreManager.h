@@ -6,7 +6,13 @@
 //  Copyright (c) 2014年 tarunon. All rights reserved.
 //
 
+#if TARGET_OS_IPHONE
+
 #import <UIKit/UIKit.h>
+
+#endif
+
+
 #import <CoreData/CoreData.h>
 
 typedef enum : NSUInteger {
@@ -35,7 +41,9 @@ typedef void (^TNStoreManagerDefinePriorityBlock)(TNStoreManagerPriorityStore pr
 @property (nonatomic) BOOL useUbiquityStore;
 
 - (instancetype)initWithDelegate:(id<TNStoreManagerDelegate>)delegate objectModel:(NSManagedObjectModel *)model localStoreURL:(NSURL *)localStoreURL ubiquityStoreURL:(NSURL *)ubiquityStoreURL contentName:(NSString *)contentName;
+- (id)getOrInsertWithEntityName:(NSString *)entityName keyedValues:(NSDictionary *)keyedValues;
 - (void)save;
+- (void)didCrashWithException:(NSException *)exception;
 
 @end
 

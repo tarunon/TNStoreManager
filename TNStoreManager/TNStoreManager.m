@@ -179,6 +179,30 @@
     }
 }
 
+- (id)getOrInsertWithEntityName:(NSString *)entityName keyedValues:(NSDictionary *)keyedValues
+{
+    if (_context) {
+        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entityName];
+        request.predicate = [NSPredicate predicateWithFormat:[NSString stringWithFormat:@"%@ == %%@", [keyedValues.allKeys componentsJoinedByString:@" == %@ AND "]] argumentArray:keyedValues.allValues];
+        NSArray *entities = [_context executeFetchRequest:request error:nil];
+        if (entities.count > 0) {
+            return entities.firstObject;
+        }
+        NSManagedObject *entity = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:_context];
+        NSMutableDictionary *mutableKeyedValues = keyedValues.mutableCopy;
+        for (NSString *key in keyedValues) {
+            id object = keyedValues[key];
+            if ([object isKindOfClass:[NSManagedObject class]] || ([object isKindOfClass:[NSSet class]] && [[object firstObject] isKindOfClass:[NSManagedObject class]])) {
+                [mutableKeyedValues removeObjectForKey:key];
+                [entity setPrimitiveValue:object forKey:key];
+            }
+        }
+        [entity setValuesForKeysWithDictionary:mutableKeyedValues];
+        return entity;
+    }
+    return nil;
+}
+
 - (void)save
 {
     if (_mergeCount) {
@@ -195,6 +219,21 @@
             [self failSaveWithError:error];
         }];
     }];
+}
+
+- (void)didCrashWithException:(NSException *)exception
+{
+    if ([exception.reason isEqualToString:@"*** setObjectForKey: key cannot be nil"] || [exception.reason rangeOfString:@"PFUbiquity"].location != NSNotFound) {
+        if ([exception.callStackSymbols filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self CONTAINS %@", @"CoreData"]].count) {
+            if (_context.persistentStoreCoordinator.persistentStores.count) {
+                [[NSFileManager defaultManager] moveItemAtURL:[_context.persistentStoreCoordinator.persistentStores.firstObject URL] toURL:_localStoreURL error:nil];
+            } else {
+                [@"" writeToURL:_localStoreURL atomically:YES encoding:NSUTF8StringEncoding error:nil];
+            }
+            [[NSFileManager defaultManager] evictUbiquitousItemAtURL:_ubiquityStoreURL error:nil];
+            [[NSFileManager defaultManager] removeItemAtURL:[self ubiquityLocalCacheURL] error:nil];
+        }
+    }
 }
 
 - (void)failLoadWithError:(NSError *)error
@@ -235,8 +274,10 @@
         void (^moveBlock)(TNStoreManagerPriorityStore);
         if (_useUbiquityStore) {
             if (!_ubiquityStoreURL) {
+#if TARGET_OS_IPHONE
 #ifndef EXTENSION
-                [[[UIAlertView alloc] initWithTitle:@"Disable iCloud" message:@"Please open Settings App, and enable iCloud options." delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+                [[[UIAlertView alloc] initWithTitle:ROOM_STRING_ALERT_TITLE_DISABLECLOUD message:ROOM_STRING_ALERT_MESSAGE_DISABLECLOUD delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+#endif
 #endif
                 _useUbiquityStore = NO;
                 return;
