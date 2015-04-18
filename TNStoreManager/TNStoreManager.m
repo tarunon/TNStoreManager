@@ -10,13 +10,6 @@
 
 @implementation TNStoreManager
 
-+ (void)initialize
-{
-    if (self != [TNStoreManager class]) {
-        return;
-    }
-}
-
 - (instancetype)initWithDelegate:(id<TNStoreManagerDelegate>)delegate objectModel:(NSManagedObjectModel *)model localStoreURL:(NSURL *)localStoreURL ubiquityStoreURL:(NSURL *)ubiquityStoreURL contentName:(NSString *)contentName
 {
     if (self = [super init]) {
@@ -25,9 +18,8 @@
         _localStoreOptions = @{NSMigratePersistentStoresAutomaticallyOption: @YES, NSInferMappingModelAutomaticallyOption: @YES, NSPersistentStoreRemoveUbiquitousMetadataOption: @YES};
         _ubiquityStoreURL = ubiquityStoreURL;
         _model = model;
-        _coordinatorQueue = dispatch_queue_create("TNStoreManagerQueue", DISPATCH_QUEUE_PRIORITY_DEFAULT);
-        dispatch_async(_coordinatorQueue, ^{
-            _coordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:_model];
+        _coordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:_model];
+        [_coordinator performBlock:^{
             _useUbiquityStore = _ubiquityStoreURL && [[NSFileManager defaultManager] fileExistsAtPath:_ubiquityStoreURL.path] && ![[NSFileManager defaultManager] fileExistsAtPath:_localStoreURL.path];
             if (_ubiquityStoreURL) {
                 _ubiquityStoreOptions = @{NSMigratePersistentStoresAutomaticallyOption: @YES, NSInferMappingModelAutomaticallyOption: @YES, NSPersistentStoreUbiquitousContentNameKey: contentName, NSPersistentStoreUbiquitousContentURLKey: _ubiquityStoreURL};
@@ -39,7 +31,7 @@
             }
             [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mergeChangesFromUbiquity:) name:NSPersistentStoreDidImportUbiquitousContentChangesNotification object:nil];
             [_delegate manager:self createdObjectContext:[self contextFromCoordinator:_coordinator]];
-        });
+        }];
     }
     return self;
 }
@@ -253,17 +245,17 @@
 - (void)mergeChangesFromUbiquity:(NSNotification *)note
 {
     NSLog(@"Merge ubiquity store");
-    dispatch_async(_coordinatorQueue, ^{
+    [_coordinator performBlock:^{
         _mergeCount++;
-    });
+    }];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [NSThread sleepForTimeInterval:0.5];
-        dispatch_async(_coordinatorQueue, ^{
+        [_coordinator performBlock:^{
             _mergeCount--;
             if (!_mergeCount) {
                 [_delegate manager:self createdObjectContext:[self contextFromCoordinator:_coordinator]];
             }
-        });
+        }];
     });
 }
 
@@ -281,10 +273,10 @@
                 if (priorityStore == TNStoreManagerPriorityStoreLocal) {
                     [self moveLocalStoreToUbiquityStore];
                 } else {
-                    dispatch_sync(_coordinatorQueue, ^{
+                    [_coordinator performBlock:^{
                         [[NSFileManager defaultManager] removeItemAtURL:[self ubiquityLocalCacheURL] error:nil];
                         [self loadUbiquityStore];
-                    });
+                    }];
                 }
                 [[NSFileManager defaultManager] removeItemAtURL:_localStoreURL error:nil];
                 _useUbiquityStore = YES;
@@ -295,9 +287,9 @@
                 if (priorityStore == TNStoreManagerPriorityStoreUbiquity) {
                     [self copyUbiquityStoreToLocalStore];
                 } else {
-                    dispatch_sync(_coordinatorQueue, ^{
+                    [_coordinator performBlock:^{
                         [self loadLocalStore];
-                    });
+                    }];
                 }
                 _useUbiquityStore = NO;
                 [_delegate manager:self createdObjectContext:[self contextFromCoordinator:_coordinator]];

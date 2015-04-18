@@ -1,12 +1,12 @@
 #TNStoreManager
 
-##使い方
-CoreDataのマネージャークラス。  
-AppDelegate等にTNStoreManagerDelegateを貼り、TNStoreManagerのインスタンスを作る。  
-manager:createdObjectContext:にNSManagedObjectContextが降ってくるので後は良しなに。  
-useUbiquityStoreでiCloudの利用を切り替える。初期化時はファイルの有無で判定。  
-iCloud利用の切替時にコンフリクトする場合はdelegateの  
-manager:definePriorityStore:でローカルとiCloudの優先を選択。マージはしない。  
+TNStoreManager is a wrapper class for CoreData.
+
+##How To Use
+
+- Make instance using -initWithDelegate:objectModel:localStoreURL:ubiquityStoreURL:contentName:.
+- Get NSManagedObjectContext in delegate using -manager:createdObjectContext:.
+- If you use iCloud Sync, set YES at useUbiquityStore and define priority store using -manager:definePriorityStore:.
 
 ##Pod
 pod 'TNStoreManager', :git => 'https://github.com/tarunon/TNStoreManager.git'
