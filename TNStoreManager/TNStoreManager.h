@@ -33,7 +33,6 @@ typedef void (^TNStoreManagerDefinePriorityBlock)(TNStoreManagerPriorityStore pr
     NSMutableDictionary *_migratedObjectIDs;
     NSURL *_localStoreURL;
     NSURL *_ubiquityStoreURL;
-    dispatch_queue_t _coordinatorQueue;
     NSInteger _mergeCount;
 }
 

@@ -8,14 +8,14 @@
 
 Pod::Spec.new do |s|
   s.name         = "TNStoreManager"
-  s.version      = "0.0.2"
+  s.version      = "0.0.3"
   s.summary      = "TNStoreManager is CoreData manager supported iCloud sync."
   s.homepage     = "https://github.com/tarunon/TNStoreManager"
   s.license      = { :type => "MIT", :file => "LICENSE.txt" }
   s.author             = { "tarunon" => "croissant9603@gmail.com" }
-  s.ios.deployment_target = "7.0"
-  s.osx.deployment_target = "10.9"
-  s.source       = { :git => "https://github.com/tarunon/TNStoreManager.git", :tag => "0.0.2" }
+  s.ios.deployment_target = "8.0"
+  s.osx.deployment_target = "10.10"
+  s.source       = { :git => "https://github.com/tarunon/TNStoreManager.git", :tag => "0.0.3" }
   s.source_files  = "TNStoreManager", "TNStoreManager/*.{h,m}"
   s.requires_arc = true
 end
